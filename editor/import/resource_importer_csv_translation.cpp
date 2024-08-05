@@ -56,6 +56,9 @@ String ResourceImporterCSVTranslation::get_resource_type() const {
 }
 
 bool ResourceImporterCSVTranslation::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
+	if (p_option == "custom_delimiter" && int(p_options["delimiter"]) != DELIMITER_CUSTOM) {
+		return false;
+	}
 	return true;
 }
 
@@ -69,7 +72,8 @@ String ResourceImporterCSVTranslation::get_preset_name(int p_idx) const {
 
 void ResourceImporterCSVTranslation::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "compress"), true));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "delimiter", PROPERTY_HINT_ENUM, "Comma,Semicolon,Tab"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "delimiter", PROPERTY_HINT_ENUM, "Comma,Semicolon,Tab,Custom", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "custom_delimiter"), ""));
 }
 
 Error ResourceImporterCSVTranslation::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
@@ -77,14 +81,18 @@ Error ResourceImporterCSVTranslation::import(const String &p_source_file, const 
 
 	String delimiter;
 	switch ((int)p_options["delimiter"]) {
-		case 0:
+		case DELIMITER_COMMA:
 			delimiter = ",";
 			break;
-		case 1:
+		case DELIMITER_SEMICOLON:
 			delimiter = ";";
 			break;
-		case 2:
+		case DELIMITER_TAB:
 			delimiter = "\t";
+			break;
+		case DELIMITER_CUSTOM:
+			delimiter = p_options["custom_delimiter"];
+			ERR_FAIL_COND_V_MSG(delimiter.is_empty(), ERR_INVALID_PARAMETER, "Error importing CSV translation: Custom delimiter is empty");
 			break;
 	}
 

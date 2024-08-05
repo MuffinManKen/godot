@@ -36,6 +36,14 @@
 class ResourceImporterCSVTranslation : public ResourceImporter {
 	GDCLASS(ResourceImporterCSVTranslation, ResourceImporter);
 
+protected:
+	enum DelimiterType {
+		DELIMITER_COMMA,
+		DELIMITER_SEMICOLON,
+		DELIMITER_TAB,
+		DELIMITER_CUSTOM,
+	};
+
 public:
 	virtual String get_importer_name() const override;
 	virtual String get_visible_name() const override;
